@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Fetch异步获取文本流</title>
+</head>
+<body>
+<div id="text_div">
+
+</div>
+<button id="fetch_button" onclick="fetch_text()">fetch</button>
+<script>
+    const text_div = {
+        text:'',
+        dom:document.getElementById('text_div'),
+        get value(){
+            return this.text
+        },
+        set value(text){
+            this.text = text;
+            this.dom.innerText = text
+        }
+    }
+    function fetch_text(interval=0.02){
+            fetch("/stream_text/"+interval).then(res=>{
+        const reader = res.body.getReader()
+        return new ReadableStream({
+            start(controller) {
+                // The following function handles each data chunk
+                function push() {
+                    // "done" is a Boolean and value a "Uint8Array"
+                    reader.read().then(({ done, value }) => {
+                        // If there is no more data to read
+                        if (done) {
+                            // console.log('done', done);
+                            controller.close();
+                            return;
+                        }
+                        // Get the data and send it to the browser via the controller
+                        controller.enqueue(value);
+                        // Check chunks by logging to the console
+                        // Unit8 decode to utf-8 text
+                        let text = new TextDecoder('utf-8').decode(value)
+                        text_div.value += text;
+                        console.log(text)
+                        push();
+                    });
+                }
+                push();
+            },
+        });
+    })
+    }
+</script>
+
+</body>
+<style>
+    #text_div{
+        border: 1px dashed green;
+        padding: 1em;
+    }
+</style>
+</html>
