@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-from text import js_is_best
+from text import js_is_best, python_is_best
 
 app = FastAPI()
 
@@ -33,7 +33,7 @@ async def read_root():
 @app.get("/stream_text/{interval}")
 async def stream_text(interval: float):
     async def text_gen():
-        for chunk in js_is_best:
+        for chunk in python_is_best:
             await asyncio.sleep(interval)
             yield chunk
 
@@ -43,4 +43,4 @@ async def stream_text(interval: float):
 app.mount("/", StaticFiles(directory="static"), name="static")
 
 if __name__ == '__main__':
-    uvicorn.run(app)
+    uvicorn.run(app, port=8000)
