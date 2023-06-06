@@ -43,12 +43,14 @@ class TestController(unittest.TestCase):
         :return:
         """
         async def async_print():
-            client = httpx.AsyncClient()
-            async with client.stream('GET', URL) as response:
-                async for chunk in response.aiter_bytes():
-                    chunk = chunk.decode('utf-8')
-                    print(chunk)
-            await client.aclose()
+            async with httpx.AsyncClient() as client:
+                async with client.stream('GET', URL) as response:
+                    async for chunk in response.aiter_bytes():
+                        chunk = chunk.decode('utf-8')
+                        print(chunk)
+
+        asyncio.run(async_print())
+
 
 
 if __name__ == '__main__':
