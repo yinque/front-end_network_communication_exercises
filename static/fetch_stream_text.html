@@ -4,25 +4,31 @@
     <meta charset="UTF-8">
     <title>Fetch异步获取文本流</title>
 </head>
-<body>
-<div id="text_div">
-
-</div>
-<button id="fetch_button" onclick="fetch_text()">fetch</button>
 <script>
-    const text_div = {
-        text:'',
-        dom:document.getElementById('text_div'),
-        get value(){
-            return this.text
-        },
-        set value(text){
-            this.text = text;
-            this.dom.innerText = text
+    BASE_URL = "http://127.0.0.1:8000";
+    function div_model(element_id){
+        return {
+            text:'',
+            dom: document.getElementById(element_id),
+            get value(){
+                return this.text
+            },
+            set value(text){
+                this.text = text;
+                this.dom.innerText = text
+            }
         }
     }
-    function fetch_text(interval=0.02){
-            fetch("/stream_text/"+interval).then(res=>{
+</script>
+<body>
+<div id="p1">
+    <div id="d1" class="content"></div>
+    <button onclick="p1_fetch()">mdn样例fetch</button>
+</div>
+<script>
+    const dm1 = div_model('d1')
+    function p1_fetch(interval=0.02){
+            fetch(BASE_URL+"/stream_text/"+interval).then(res=>{
         const reader = res.body.getReader()
         return new ReadableStream({
             start(controller) {
@@ -41,7 +47,7 @@
                         // Check chunks by logging to the console
                         // Unit8 decode to utf-8 text
                         let text = new TextDecoder('utf-8').decode(value)
-                        text_div.value += text;
+                        dm1.value += text;
                         console.log(text)
                         push();
                     });
@@ -52,10 +58,72 @@
     })
     }
 </script>
+<div id="p2">
+    <div id="d2" class="content"></div>
+    <button onclick="p2_fetch()">无controller版fetch</button>
+</div>
+
+<script>
+    const dm2 = div_model('d2')
+    function p2_fetch(interval=0.02) {
+        fetch(BASE_URL + "/stream_text/" + interval).then(res => {
+            const reader = res.body.getReader()
+            const decoder = new TextDecoder("utf-8");
+            function readStream() {
+              reader.read().then(({ done, value }) => {
+                if (done) {
+                  // 文本流读取完毕，可以在这里执行相应的处理操作
+                  console.log("文本流读取完毕");
+                  return;
+                }
+                // 将二进制数据转换为文本
+                const text = decoder.decode(value, { stream: true });
+                // 处理文本数据，例如打印到控制台或展示在页面上
+                dm2.value += text;
+                console.log(text)
+                // 继续读取下一个数据块
+                readStream();
+              });
+            }
+            // 开始读取文本流
+            readStream();
+          }).catch(error => {
+            // 处理请求错误
+            console.error("请求出错:", error);
+          });
+    }
+</script>
+
+<div id="p3">
+    <div id="d3" class="content"></div>
+    <button onclick="p3_fetch()">生成器fetch</button>
+</div>
+<script>
+    const dm3 = div_model('d3')
+    async function* stream(url) {
+        const response = await fetch(url);
+        const reader = response.body.getReader();
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) {
+                break;
+            }
+            yield value;
+        }
+    }
+    async function p3_fetch(interval=0.02){
+        const decoder = new TextDecoder('utf-8')
+        for await (const chunk of stream(BASE_URL+"/stream_text/"+interval)) {
+            const text = decoder.decode(chunk,{stream:true})
+            dm3.value += text
+            console.log(text)
+        }
+    }
+</script>
 
 </body>
 <style>
-    #text_div{
+    .content{
         border: 1px dashed green;
         padding: 1em;
     }
