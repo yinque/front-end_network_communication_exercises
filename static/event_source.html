@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>EventSource Example</title>
+  </head>
+  <body>
+    <h1>EventSource Example</h1>
+    <div id="event-container"></div>
+    <button onclick="requestEvent()">请求事件</button>
+    <script>
+      function requestEvent() {
+        const eventContainer = document.getElementById("event-container");
+        const eventSource = new EventSource("/events");
+
+        // 监听消息事件
+        eventSource.addEventListener("message", (event) => {
+          const eventData = event.data;
+          // 检查是否收到结束标记
+          if (eventData === "[DONE]") {
+            // 停止发送请求
+            eventSource.close();
+          }
+          // 将事件数据添加到容器中
+          eventContainer.innerHTML += `<p>${eventData}</p>`;
+        });
+        // 监听错误事件
+        eventSource.addEventListener("error", (error) => {
+          console.error("An error occurred", error);
+        });
+      }
+    </script>
+  </body>
+</html>

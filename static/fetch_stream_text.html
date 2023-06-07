@@ -21,9 +21,10 @@
     }
 </script>
 <body>
+
 <div id="p1">
     <div id="d1" class="content"></div>
-    <button onclick="p1_fetch()">mdn样例fetch</button>
+    <button onclick="p1_fetch()" type="button">mdn样例fetch</button>
 </div>
 <script>
     const dm1 = div_model('d1')
@@ -58,11 +59,11 @@
     })
     }
 </script>
+
 <div id="p2">
     <div id="d2" class="content"></div>
-    <button onclick="p2_fetch()">无controller版fetch</button>
+    <button onclick="p2_fetch()" type="button">无controller版fetch</button>
 </div>
-
 <script>
     const dm2 = div_model('d2')
     function p2_fetch(interval=0.02) {
@@ -96,11 +97,52 @@
 
 <div id="p3">
     <div id="d3" class="content"></div>
-    <button onclick="p3_fetch()">生成器fetch</button>
+    <button onclick="p3_fetch()" type="button">生成器fetch</button>
 </div>
 <script>
     const dm3 = div_model('d3')
-    async function* stream(url) {
+    // function* stream(url) {
+    //     let m = {
+    //         done: false,
+    //         value: false
+    //     };
+    //     fetch(url).then(res=>{
+    //         const reader = res.body.getReader();
+    //         reader.read().then((done,value)=>{
+    //             if (done) {
+    //               m.done=true;
+    //             }
+    //             m.value=value;
+    //         })
+    //     })
+    //     while (true){
+    //         if(m.done){
+    //             break;
+    //         }
+    //         if (m.value){
+    //             yield m.value;
+    //             m.value = false;
+    //         }
+    //     }
+    // }
+    function p3_fetch(interval=0.02){
+        // const decoder = new TextDecoder('utf-8')
+        // for(const chunk of stream(BASE_URL+"/stream_text/"+interval)) {
+        //     const text = decoder.decode(chunk,{stream:true})
+        //     dm3.value += text
+        //     console.log(text)
+        // }
+        dm3.value = "暂时不能用"
+    }
+</script>
+
+<div id="p4">
+    <div id="d4" class="content"></div>
+    <button onclick="p4_fetch()" type="button">异步生成器fetch</button>
+</div>
+<script>
+    const dm4 = div_model('d4')
+    async function* async_stream(url) {
         const response = await fetch(url);
         const reader = response.body.getReader();
         while (true) {
@@ -111,11 +153,11 @@
             yield value;
         }
     }
-    async function p3_fetch(interval=0.02){
+    async function p4_fetch(interval=0.02){
         const decoder = new TextDecoder('utf-8')
-        for await (const chunk of stream(BASE_URL+"/stream_text/"+interval)) {
+        for await (const chunk of async_stream(BASE_URL+"/stream_text/"+interval)) {
             const text = decoder.decode(chunk,{stream:true})
-            dm3.value += text
+            dm4.value += text
             console.log(text)
         }
     }

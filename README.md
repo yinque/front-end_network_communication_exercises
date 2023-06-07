@@ -9,5 +9,5 @@
 | 文件                                                         | 说明                    |
 | ------------------------------------------------------------ | ----------------------- |
 | [fetch_stream_text.html](https://github.com/yinque/front-end_network_communication_exercises/blob/main/static/fetch_stream_text.html) | 使用fetch异步获取文本流 |
-|                                                              |                         |
+| [event_source.html](https://github.com/yinque/front-end_network_communication_exercises/blob/main/static/event_source.html) | EventSource事件消息 |
 |                                                              |                         |

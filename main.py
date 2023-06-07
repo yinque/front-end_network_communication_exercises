@@ -40,6 +40,17 @@ async def stream_text(interval: float):
     return StreamingResponse(text_gen(), media_type="application/octet-stream")
 
 
+@app.get("/events")
+async def get_events():
+    async def event_generator():
+        for i in range(1, 6):
+            yield f"data: Event {i}\n\n"    # 尤其注意，事件末尾要加上\n\n，否则EventSource不识别
+            await asyncio.sleep(0.2)
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
 app.mount("/", StaticFiles(directory="static"), name="static")
 
 if __name__ == '__main__':

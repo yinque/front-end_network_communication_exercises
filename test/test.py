@@ -1,16 +1,18 @@
 import asyncio
 
-import httpx
 
-URL = "http://127.0.0.1:8000/stream_text/0.02"
-
-
-async def async_print():
-    async with httpx.AsyncClient() as client:
-        async with client.stream('GET', URL) as response:
-            async for chunk in response.aiter_bytes():
-                chunk = chunk.decode('utf-8')
-                print(chunk)
+async def event_generator():
+    for i in range(1, 6):
+        yield f"data: Event {i}\n\n"
+        await asyncio.sleep(0.2)
+    yield "data: [DONE]"
 
 
-asyncio.run(async_print())
+async def main():
+    e = event_generator()
+    async for event in e:
+        print(event)
+
+
+# 使用asyncio.run来运行异步函数
+asyncio.run(main())

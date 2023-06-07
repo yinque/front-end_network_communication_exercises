@@ -9,6 +9,7 @@ URL = "http://127.0.0.1:8000/stream_text/0.02"
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 
+
 class TestController(unittest.TestCase):
     def setUp(self):
         # 在每个测试方法之前运行的设置代码
@@ -42,6 +43,7 @@ class TestController(unittest.TestCase):
         异步流式打印
         :return:
         """
+
         async def async_print():
             async with httpx.AsyncClient() as client:
                 async with client.stream('GET', URL) as response:
@@ -50,7 +52,6 @@ class TestController(unittest.TestCase):
                         print(chunk)
 
         asyncio.run(async_print())
-
 
 
 if __name__ == '__main__':
