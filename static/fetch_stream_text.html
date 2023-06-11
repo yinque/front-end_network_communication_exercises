@@ -142,18 +142,19 @@
 </div>
 <script>
     const dm4 = div_model('d4')
-    async function* async_stream(url) {
-        const response = await fetch(url);
-        const reader = response.body.getReader();
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) {
-                break;
-            }
-            yield value;
-        }
-    }
+
     async function p4_fetch(interval=0.02){
+        async function* async_stream(url) {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) {
+                    break;
+                }
+                yield value;
+            }
+        }
         const decoder = new TextDecoder('utf-8')
         for await (const chunk of async_stream(BASE_URL+"/stream_text/"+interval)) {
             const text = decoder.decode(chunk,{stream:true})

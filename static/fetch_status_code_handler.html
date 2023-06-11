@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>fetch错误处理</title>
+</head>
+
+<body>
+<h1>fetch对于响应错误、status code错误的处理</h1>
+<div>
+    <button onclick="f(200)">200</button>
+    <button onclick="f(401)">401</button>
+    <button onclick="f(401,true)">401作为异常处理</button>
+    <div id="content"></div>
+</div>
+<script>
+    const content = document.querySelector('#content')
+    function record(msg){
+        content.innerText += msg+'\n'
+        console.log(msg)
+    }
+    function clear(){
+        content.innerText=""
+    }
+    function f(code,is_raise=false){  //is_raise：状态码错误是否引发异常
+        clear()
+        fetch('http://127.0.0.1:8000/status_code/'+code)
+        .then(response => {
+            if (response.ok) { //处理正常响应（状态码在200-299的）
+                record("正常状态码："+response.status)
+            }else{  //处理异常响应
+                record("异常状态码："+response.status)
+                if(is_raise){
+                    throw new Error(`状态码错误${response.status}`);
+                }
+            }
+            return response.json(); //返回response数据，交付给data=>{}回调函数
+        })
+        .then(data => {
+            // Handle successful response
+            record("data："+JSON.stringify(data));
+        })
+        .catch(error => {
+            // Handle error，用于处理response => {}函数执行过程中的错误
+            record(error);
+        });
+    }
+</script>
+</body>
+</html>

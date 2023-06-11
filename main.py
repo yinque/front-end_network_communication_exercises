@@ -50,6 +50,8 @@ async def get_events():
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
+from router import status_code_router
+app.include_router(status_code_router.router)
 
 app.mount("/", StaticFiles(directory="static"), name="static")
 
