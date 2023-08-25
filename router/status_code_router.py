@@ -1,3 +1,5 @@
+# 存放状态码资源
+
 from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/status_code")

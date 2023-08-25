@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>WebSocket样例</title>
+    <script src="_lib/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="global.css">
+    <link rel="stylesheet" href="_lib/toastify/toastify.min.css">
+    <script src="_lib/toastify/toastify.min.js"></script>
+    <script src="utils/toast.js"></script>
+</head>
+<body>
+<h1>WebSocket样例</h1>
+<div class="flex ai-start">
+    <div id="chatbox1" class="bg-light mx05em">
+        <h3>输入1</h3>
+        <span>
+            <input id="input1" type="text" placeholder="说句话吧！">
+            <button id="send_button1" type="button">发送</button>
+            <button id="connect_button1" type="button">连接</button>
+            <button id="disconnect_button1" type="button">关闭</button>
+        </span>
+        <h3>对话记录</h3>
+        <ul id="history1">
+        </ul>
+    </div>
+    <div id="chatbox2" class="bg-light mx05em">
+        <h3>输入2</h3>
+        <span>
+            <input id="input2" type="text" placeholder="说句话吧！">
+            <button id="send_button2" type="button">发送</button>
+            <button id="connect_button2" type="button">连接</button>
+            <button id="disconnect_button2" type="button">关闭</button>
+        </span>
+        <h3>对话记录</h3>
+        <ul id="history2">
+        </ul>
+    </div>
+    <div id="observer" class="bg-light mx05em">
+        <h3>监察者</h3>
+         <span CLASS="hidden-element">
+            <input id="input3" type="text" placeholder="说句话吧！">
+            <button id="send_button3" type="button">发送</button>
+            <button id="connect_button3" type="button">连接</button>
+            <button id="disconnect_button3" type="button">关闭</button>
+        </span>
+        <h3>对话记录</h3>
+        <ul id="history3">
+        </ul>
+    </div>
+</div>
+
+<script>
+
+    let socket1,socket2,socket3;
+
+    // 1号
+    function send1(){
+        if (socket1?.readyState !== WebSocket.OPEN) {    //未连接时不可发送
+            showToast("websocket还没连接呢！不可发送")
+            return
+        }
+        socket1.send($('#input1').val());   // send message
+        $('#input1').val('')    // empty form
+    }
+    $('#send_button1').on('click',send1)
+    $('#connect_button1').on('click',()=>{
+        if (socket1?.readyState === WebSocket.OPEN) {    //已连接时不重复连接
+            showToast("websocket已连接，不可重复连接")
+            return
+        }
+        socket1 = new WebSocket("ws://localhost:8000/ws/客户端1");
+        bindEvent1();
+    })
+    $('#disconnect_button1').on('click',()=>{
+        if (socket1?.readyState !== WebSocket.OPEN) {    //未连接时不可关闭
+            showToast("websocket还没连接呢！不可以关闭")
+            return
+        }
+        socket1.close();
+    })
+    function bindEvent1(){
+        socket1.onmessage = (event) => {
+            console.log("Received message:", event.data);
+            // 处理接收到的消息
+            $('#history1').append(`<li>${event.data}</li>`)
+        };
+    }
+    $('#input1').on('keydown',(event)=>{
+        if(event.key==="Enter"){
+            send1()
+        }
+    })
+
+    // 2号
+    function send2(){
+        if (socket2?.readyState !== WebSocket.OPEN) {    //未连接时不可发送
+            showToast("websocket还没连接呢！不可发送")
+            return
+        }
+        socket2.send($('#input2').val());   // send message
+        $('#input2').val('')    // empty form
+    }
+    $('#send_button2').on('click', send2)
+    $('#connect_button2').on('click',()=>{
+        if (socket2?.readyState === WebSocket.OPEN) {    //已连接时不重复连接
+            showToast("websocket已连接，不可重复连接")
+            return
+        }
+        socket2 = new WebSocket("ws://localhost:8000/ws/客户端2");
+        bindEvent2();
+    })
+    $('#disconnect_button2').on('click',()=>{
+        if (socket2?.readyState !== WebSocket.OPEN) {    //未连接时不可关闭
+            showToast("websocket还没连接呢！不可以关闭")
+            return
+        }
+        socket2.close();
+    })
+    function bindEvent2(){
+        socket2.onmessage = (event) => {
+            console.log("Received message:", event.data);
+            // 处理接收到的消息
+            $('#history2').append(`<li>${event.data}</li>`)
+        };
+    }
+    $('#input2').on('keydown',(event)=>{
+        if(event.key==="Enter"){
+            send2()
+        }
+    })
+
+    // 监察者
+    socket3 = new WebSocket("ws://localhost:8000/ws/监察者");
+    function bindEvent3(){
+        socket3.onopen = (event) => {
+        console.log("WebSocket connected");
+        // 处理打开事件
+        };
+        socket3.onmessage = (event) => {
+            console.log("Received message:", event.data);
+            // 处理接收到的消息
+            $('#history3').append(`<li>${event.data}</li>`)
+        };
+        socket3.onclose = (event) => {
+            console.log("WebSocket disconnected");
+            // 处理关闭事件
+        };
+    }
+    bindEvent3()
+
+    // 监听页面即将被卸载事件
+    window.addEventListener("beforeunload", function() {
+      if (socket1?.readyState === WebSocket.OPEN) {
+        socket1.close(); // 在页面刷新前关闭 WebSocket 连接
+      }
+      if (socket2?.readyState === WebSocket.OPEN) {
+        socket2.close(); // 在页面刷新前关闭 WebSocket 连接
+      }
+      if (socket3?.readyState === WebSocket.OPEN) {
+        socket3.close(); // 在页面刷新前关闭 WebSocket 连接
+      }
+    });
+</script>
+</body>
+<style>
+li{
+    background-color: #DDD;
+    margin-bottom: 0.5em;
+}
+/*配色*/
+.bg-light{
+  background-color: #F6F4EB;
+}
+/*默认样式修改*/
+ul, ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+</style>
+</html>

@@ -1,12 +1,9 @@
-import asyncio
 import os
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, StreamingResponse
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-
-from text import js_is_best, python_is_best
 
 app = FastAPI()
 
@@ -19,41 +16,34 @@ app.add_middleware(
     allow_headers=["*"],  # 允许的自定义请求头，可以根据需求进行设置，例如 ["Content-Type", "Authorization"]
 )
 
-file_list = ['docs'] + os.listdir("static")
+# make index
+def list_files_in_directory(directory_path):
+    file_list = []
+    for filename in os.listdir(directory_path):
+        filepath = os.path.join(directory_path, filename)
+        if os.path.isfile(filepath):
+            file_list.append(filename)
+    return file_list
+
+file_list = ['docs'] + list_files_in_directory("static")
 index = ""
 for i in file_list:
-    index += f'<a href="/{i}">{i}</a><br>'
+    index += f'''\
+    <a href="/{i}" target="_blank">{i}</a><br>
+    '''
 
 
 @app.get("/")
 async def read_root():
     return HTMLResponse(index)
 
-
-@app.get("/stream_text/{interval}")
-async def stream_text(interval: float):
-    async def text_gen():
-        for chunk in python_is_best:
-            await asyncio.sleep(interval)
-            yield chunk
-
-    return StreamingResponse(text_gen(), media_type="application/octet-stream")
-
-
-@app.get("/events")
-async def get_events():
-    async def event_generator():
-        for i in range(1, 6):
-            yield f"data: Event {i}\n\n"    # 尤其注意，事件末尾要加上\n\n，否则EventSource不识别
-            await asyncio.sleep(0.2)
-        yield "data: [DONE]\n\n"
-
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
-
-from router import status_code_router
+# router append
+from router import status_code_router, root_router ,websocket_router
 app.include_router(status_code_router.router)
+app.include_router(root_router.router)
+app.include_router(websocket_router.router)
 
 app.mount("/", StaticFiles(directory="static"), name="static")
 
 if __name__ == '__main__':
-    uvicorn.run(app, port=8000)
+    uvicorn.run("main:app", port=8000, reload=True)

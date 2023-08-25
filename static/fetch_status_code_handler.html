@@ -7,42 +7,43 @@
 
 <body>
 <h1>fetch对于响应错误、status code错误的处理</h1>
+<div><span>tips:</span>关闭后端体验请求超时错误</div>
+<h2>promise链形式</h2>
 <div>
     <button onclick="f(200)">200</button>
     <button onclick="f(401)">401</button>
     <button onclick="f(401,true)">401作为异常处理</button>
-    <div id="content"></div>
+    <div id="content1"></div>
 </div>
 <script>
-    const content = document.querySelector('#content')
     function record(msg){
-        content.innerText += msg+'\n'
+        content1.innerText += msg+'\n'
         console.log(msg)
     }
     function clear(){
-        content.innerText=""
+        content1.innerText=""
     }
     function f(code,is_raise=false){  //is_raise：状态码错误是否引发异常
         clear()
         fetch('http://127.0.0.1:8000/status_code/'+code)
         .then(response => {
             if (response.ok) { //处理正常响应（状态码在200-299的）
-                record("正常状态码："+response.status)
+                record(`正常状态码【${response.status}】`)
             }else{  //处理异常响应
-                record("异常状态码："+response.status)
+                record(`异常状态码【${response.status}】`)
                 if(is_raise){
-                    throw new Error(`状态码错误${response.status}`);
+                    throw new Error(`状态码错误【${response.status}】`);
                 }
             }
             return response.json(); //返回response数据，交付给data=>{}回调函数
         })
         .then(data => {
             // Handle successful response
-            record("data："+JSON.stringify(data));
+            record(`data数据【${JSON.stringify(data)}】`);
         })
         .catch(error => {
-            // Handle error，用于处理response => {}函数执行过程中的错误
-            record(error);
+            // Handle error，用于处理response => {}、data=>{}函数执行过程中的错误
+            record(`错误【${error}】`);
         });
     }
 </script>
