@@ -21,7 +21,7 @@ def list_files_in_directory(directory_path):
     file_list = []
     for filename in os.listdir(directory_path):
         filepath = os.path.join(directory_path, filename)
-        if os.path.isfile(filepath):
+        if os.path.isfile(filepath) and filename.endswith(".html"):
             file_list.append(filename)
     return file_list
 
@@ -37,11 +37,20 @@ for i in file_list:
 async def read_root():
     return HTMLResponse(index)
 
-# router append
-from router import status_code_router, root_router ,websocket_router
-app.include_router(status_code_router.router)
-app.include_router(root_router.router)
-app.include_router(websocket_router.router)
+# router dynamic import
+import importlib
+router_folder = "./router"
+def is_router_file(filename):
+    is_file = os.path.isfile(os.path.join(router_folder, filename))
+    is_py = filename.endswith('.py')
+    return is_file and is_py
+file_list = [i for i in os.listdir(router_folder) if is_router_file(i)]
+try:
+    for filename in file_list:
+        router = importlib.import_module("router." + filename.replace('.py', '')).router
+        app.include_router(router)
+except:
+    raise Exception("导入了不干净的东西，请参照模板编写要导入的路由")
 
 app.mount("/", StaticFiles(directory="static"), name="static")
 

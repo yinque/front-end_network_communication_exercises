@@ -15,7 +15,7 @@ class ConnectionManager:
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def broadcast(self, message: str):
+    async def broadcast(self, message: str):            # 广播，向所有连接池中的设备发送消息
         for connection in self.active_connections:
             await connection.send_text(message)
 
@@ -25,7 +25,7 @@ cm = ConnectionManager()
 
 @router.websocket("/ws/{client_name}")
 async def websocket_endpoint(websocket: WebSocket, client_name: str):
-    await cm.connect(websocket)
+    await cm.connect(websocket)                         # 等待websocket客户端主动连接，追加到cm连接池中
     await cm.broadcast(f"<b>{client_name}</b>已连接")
     try:
         while True:
